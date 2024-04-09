@@ -4,7 +4,7 @@ version = "0.1.0"
 edition = "2021"
 description = "unnecessary SSH-key manager mainly for my pleasure"
 repository = "https://github.com/nrdrch/keyhelper"
-license = "GNU GPLv3"
+license = "GPLv3"
 categories = ["command-line-utilities"]
 [dependencies]
 termcolor = "1.4.1"
