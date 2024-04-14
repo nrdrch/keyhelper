@@ -7,4 +7,9 @@ repository = "https://github.com/nrdrch/keyhelper"
 license = "GPL-3.0+"
 categories = ["command-line-utilities"]
 [dependencies]
+libc = "0.2.153"
+libloading = "0.8.3"
+
 termcolor = "1.4.1"
+
+
