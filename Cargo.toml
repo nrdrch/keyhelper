@@ -1,6 +1,6 @@
 [package]
 name = "keyhelper"
-version = "0.1.3"
+version = "0.1.4"
 edition = "2021"
 description = "unnecessary SSH-key manager mainly for my pleasure"
 repository = "https://github.com/nrdrch/keyhelper"
