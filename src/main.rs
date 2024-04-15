@@ -28,12 +28,9 @@ fn main() {
     }
 }
 fn get_os_name() -> String {
-    if cfg!(target_os = "windows") {
-        "Windows".to_string()
-    } else {
-        "Linux".to_string()
-    }
+    std::env::consts::OS.to_string()
 }
+
 
 fn get_ssh_dir() -> String {
     if let Ok(ssh_dir) = env::var("HOME") {
