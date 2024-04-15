@@ -218,10 +218,10 @@ fn remove_ssh_key_linux(file_name: &str) {
     }
 
     let output = Command::new("/bin/rm")
-    .arg(&private_key_path)
-    .arg(&public_key_path)
-    .output()
-    .expect("Failed to execute rm command");
+        .arg(&private_key_path)
+        .arg(&public_key_path)
+        .output()
+        .expect("Failed to execute rm command");
 
     if output.status.success() {
         print_success(&format!(
@@ -233,7 +233,6 @@ fn remove_ssh_key_linux(file_name: &str) {
         print_error(&format!("Error removing SSH keys: {}", error_message));
     }
 }
-
 fn list_files_in_dir_linux() {
     let user_profile = get_user_profile();
     let dir_path = format!("{}/.ssh", user_profile);
