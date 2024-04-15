@@ -188,7 +188,8 @@ fn generate_ssh_key_linux(file_name: &str, passphrase: Option<&str>) {
         return;
     }
 
-    let mut ssh_keygen_command = Command::new("ssh-keygen");
+    // Specify the full path to ssh-keygen executable
+    let mut ssh_keygen_command = Command::new("/usr/bin/ssh-keygen");
     ssh_keygen_command.arg("-t").arg("rsa").arg("-f").arg(&private_key_path);
     if let Some(pass) = passphrase {
         if !pass.is_empty() {
