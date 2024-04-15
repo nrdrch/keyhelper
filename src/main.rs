@@ -32,6 +32,7 @@ fn get_os_name() -> String {
 }
 
 
+
 fn get_ssh_dir() -> String {
     if let Ok(ssh_dir) = env::var("HOME") {
         ssh_dir + "/.ssh"
@@ -44,27 +45,32 @@ fn get_ssh_dir() -> String {
 // Implement other functions here
 
 fn get_user_profile() -> String {
-    if cfg!(windows) {
-        match env::var("USERPROFILE") {
-            Ok(val) => val,
-            Err(_) => {
-                print_error("Failed to fetch USERPROFILE environment variable.");
-                std::process::exit(1);
+    match std::env::consts::OS {
+        "windows" => {
+            match env::var("USERPROFILE") {
+                Ok(val) => val,
+                Err(_) => {
+                    print_error("Failed to fetch USERPROFILE environment variable.");
+                    std::process::exit(1);
+                }
             }
         }
-    } else if cfg!(unix) {
-        match env::var("HOME") {
-            Ok(val) => val,
-            Err(_) => {
-                print_error("Failed to fetch HOME environment variable.");
-                std::process::exit(1);
+        "linux" => {
+            match env::var("HOME") {
+                Ok(val) => val,
+                Err(_) => {
+                    print_error("Failed to fetch HOME environment variable.");
+                    std::process::exit(1);
+                }
             }
         }
-    } else {
-        print_error("Unsupported operating system.");
-        std::process::exit(1);
+        _ => {
+            print_error("Unsupported operating system.");
+            std::process::exit(1);
+        }
     }
 }
+
 
 // Linux main function
 fn main_linux(_flag: &str) {
@@ -81,13 +87,13 @@ fn main_linux(_flag: &str) {
             let file_name = &args[2];
             let passphrase_index = args.iter().position(|arg| arg == "-p");
             let passphrase = passphrase_index.and_then(|index| args.get(index + 1).map(|s| s.as_str()));
-            generate_ssh_key_linux(file_name, passphrase);
+            generate_ssh_key_linux(file_name, passphrase); // Linux-specific command
         }
         "-rm" => {
             let file_name = &args[2];
-            remove_ssh_key_linux(file_name);
+            remove_ssh_key_linux(file_name); // Linux-specific command
         }
-        "-l" => list_files_in_dir_linux(),
+        "-l" => list_files_in_dir_linux(), // Linux-specific command
         "-c" => {
             if args.len() < 3 {
                 print_error("Usage: -c <SSHKeyFileName> <User@IP>");
@@ -106,7 +112,7 @@ fn main_linux(_flag: &str) {
                     return;
                 }
             };
-            copy_ssh_key_linux(remote_host, file_name);
+            copy_ssh_key_linux(remote_host, file_name); // Linux-specific command
         }
         _ => {
             print_error("Invalid command. See usage:");
@@ -114,6 +120,7 @@ fn main_linux(_flag: &str) {
         }
     }
 }
+
 
 // Windows main function
 fn main_windows(_flag: &str) {
