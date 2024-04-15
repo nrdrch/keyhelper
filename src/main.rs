@@ -1,12 +1,15 @@
 use std::env;
+
 use std::fs;
 use std::io::Write;
 use std::path::Path;
 use std::process::{Command, Stdio};
 use termcolor::{Color, ColorChoice, ColorSpec, StandardStream, WriteColor};
 
+ 
 
 fn main() {
+
     let args: Vec<String> = env::args().collect();
     if args.len() < 2 {
         print_usage();
@@ -16,6 +19,7 @@ fn main() {
     let flag = &args[1];
 
     if cfg!(target_os = "windows") {
+        
         main_windows(flag);
     } else if cfg!(target_os = "linux") {
         main_linux(flag);
@@ -23,9 +27,47 @@ fn main() {
         println!("Unsupported operating system.");
     }
 }
+fn get_os_name() -> String {
+    if cfg!(target_os = "windows") {
+        "Windows".to_string()
+    } else {
+        "Linux".to_string()
+    }
+}
 
+fn get_ssh_dir() -> String {
+    if let Ok(ssh_dir) = env::var("HOME") {
+        ssh_dir + "/.ssh"
+    } else if let Ok(ssh_dir) = env::var("USERPROFILE") {
+        ssh_dir + "/.ssh"
+    } else {
+        "Unknown".to_string()
+    }
+}
 // Implement other functions here
 
+fn get_user_profile() -> String {
+    if cfg!(windows) {
+        match env::var("USERPROFILE") {
+            Ok(val) => val,
+            Err(_) => {
+                print_error("Failed to fetch USERPROFILE environment variable.");
+                std::process::exit(1);
+            }
+        }
+    } else if cfg!(unix) {
+        match env::var("HOME") {
+            Ok(val) => val,
+            Err(_) => {
+                print_error("Failed to fetch HOME environment variable.");
+                std::process::exit(1);
+            }
+        }
+    } else {
+        print_error("Unsupported operating system.");
+        std::process::exit(1);
+    }
+}
 
 // Linux main function
 fn main_linux(_flag: &str) {
@@ -78,8 +120,10 @@ fn main_linux(_flag: &str) {
 
 // Windows main function
 fn main_windows(_flag: &str) {
+
     let args: Vec<String> = env::args().collect();
     if args.len() < 2 {
+        
         print_usage();
         return;
     }
@@ -120,6 +164,7 @@ fn main_windows(_flag: &str) {
         }
         _ => {
             print_error("Invalid command. See usage:");
+            
             print_usage();
         }
     }
@@ -172,11 +217,11 @@ fn remove_ssh_key_linux(file_name: &str) {
         return;
     }
 
-    let output = Command::new("rm")
-        .arg(&private_key_path)
-        .arg(&public_key_path)
-        .output()
-        .expect("Failed to execute rm command");
+    let output = Command::new("/bin/rm")
+    .arg(&private_key_path)
+    .arg(&public_key_path)
+    .output()
+    .expect("Failed to execute rm command");
 
     if output.status.success() {
         print_success(&format!(
@@ -297,11 +342,13 @@ fn remove_ssh_key_windows(file_name: &str) {
         return;
     }
 
-    let output = Command::new("del")
-        .arg(&private_key_path)
-        .arg(&public_key_path)
-        .output()
-        .expect("Failed to execute del command");
+    let output = Command::new("C:\\Windows\\System32\\cmd.exe")
+    .arg("/C")
+    .arg("del")
+    .arg(&private_key_path)
+    .arg(&public_key_path)
+    .output()
+    .expect("Failed to execute del command");
 
     if output.status.success() {
         print_success(&format!(
@@ -374,15 +421,19 @@ fn copy_ssh_key_windows(remote_host: &str, file_name: &str) {
 
 
 
+#[cfg(windows)]
+fn format_ssh_path(user_profile: &str, file_name: &str) -> String {
+    format!("{}\\.ssh\\{}", user_profile, file_name)
+}
+
+#[cfg(not(windows))]
 fn format_ssh_path(user_profile: &str, file_name: &str) -> String {
     format!("{}/.ssh/{}", user_profile, file_name)
 }
-fn print_usage() {
-    let _os_name = if cfg!(target_os = "windows") { "Windows" } else { "Linux" };
-    let _ssh_dir = if cfg!(target_os = "windows") { "C:\\Users\\<user>\\.ssh" } else { "/home/<user>/.ssh" };
 
+fn print_usage() {
     let header = ">_SSH Key Helper ";
-    
+    let footer = format!("OS: {}\nSSH Directory: {}", get_os_name(), get_ssh_dir());
     let cmd_descs = [
         ("-n", "<name>           | generate a new SSH key"),
         ("-p", "<passphrase>     | specify a passphrase for the SSH key (optional)"),
@@ -391,7 +442,7 @@ fn print_usage() {
         ("-c", "<file> <User@IP> | copy SSH key to a remote host"),
     ];
 
-    let footer = "";
+    
 
     let mut stdout = StandardStream::stdout(ColorChoice::Always);
 
@@ -419,32 +470,13 @@ fn print_usage() {
     let mut cs = ColorSpec::new();
     cs.set_fg(Some(Color::Ansi256(42))).set_bold(true);
     stdout.set_color(&cs).unwrap();
+    
+    
     writeln!(&mut stdout, "{}", footer).unwrap();
 }
 
 
-fn get_user_profile() -> String {
-    if cfg!(target_os = "windows") {
-        match env::var("USERPROFILE") {
-            Ok(val) => val,
-            Err(_) => {
-                print_error("Failed to fetch USERPROFILE environment variable.");
-                std::process::exit(1);
-            }
-        }
-    } else if cfg!(target_os = "linux") {
-        match env::var("HOME") {
-            Ok(val) => val,
-            Err(_) => {
-                print_error("Failed to fetch HOME environment variable.");
-                std::process::exit(1);
-            }
-        }
-    } else {
-        // Handle other OS cases
-        unimplemented!();
-    }
-}
+
 
 fn print_error(message: &str) {
     eprintln!("Error: {}", message);
